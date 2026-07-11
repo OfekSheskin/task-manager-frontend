@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom'
 
-// Phase 2: build the registration form and call the auth API.
 export default function Register() {
   return (
     <div>
