@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom'
 
-// Phase 2: build the login form and call the auth API, then store the token.
 export default function Login() {
   return (
     <div>
