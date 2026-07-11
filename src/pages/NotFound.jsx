@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom'
 
-// Required "page not found" screen.
 export default function NotFound() {
   return (
     <div>
