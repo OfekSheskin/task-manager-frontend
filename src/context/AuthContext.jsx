@@ -16,8 +16,7 @@ export function AuthProvider({ children }) {
     setToken(null)
   }
 
-  // Phase 2: add register()/login() helpers that actually call the API,
-  // then store the returned token via login().
+
   return (
     <AuthContext.Provider value={{ token, login, logout }}>
       {children}
