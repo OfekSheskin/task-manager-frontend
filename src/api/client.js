@@ -1,4 +1,3 @@
-// Thin API client. Reads the backend URL from the Vite env var (VITE_API_BASE_URL).
 const BASE_URL = import.meta.env.VITE_API_BASE_URL
 
 export async function apiFetch(path, { method = 'GET', body, token } = {}) {
