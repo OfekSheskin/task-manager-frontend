@@ -1,12 +1,17 @@
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
 import { apiFetch } from '../api/client'
+import { useTokenContext } from '../context/AuthContext'
+import { useNavigate } from 'react-router-dom'
+
 
 export default function Login() {
 
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [result, setResult] = useState(null)
+  const { login } = useTokenContext() // Use the useTokenContext hook to access the login function
+  const navigate = useNavigate()   
 
   async function handleSubmit(event) {
         event.preventDefault()
@@ -18,6 +23,8 @@ export default function Login() {
         body: { username, password },
       }) 
       setResult(data)
+      login(data.access_token)
+      navigate('/tasks') // Navigate to the tasks page after successful login
 
     }
       catch (error) {
@@ -46,7 +53,7 @@ export default function Login() {
       <p>
         Don't have an account? <Link to="/register">Register</Link>
       </p>
-      {result && <pre>{JSON.stringify(result, null, 2)}</pre>}
+ 
 
     </div>
   )

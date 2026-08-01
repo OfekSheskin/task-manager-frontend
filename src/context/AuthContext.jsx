@@ -1,10 +1,9 @@
 import { createContext, useContext, useState } from 'react'
 
-const AuthContext = createContext(null)
+const AuthContext = createContext(undefined)
 
-export function AuthProvider({ children }) {
-  // Token is persisted in localStorage so a refresh keeps you logged in.
-  const [token, setToken] = useState(() => localStorage.getItem('token'))
+export function TokenProvider({ children }) {
+  const [token, setToken] = useState(() => localStorage.getItem('token') || null)
 
   function login(newToken) {
     localStorage.setItem('token', newToken)
@@ -16,7 +15,6 @@ export function AuthProvider({ children }) {
     setToken(null)
   }
 
-
   return (
     <AuthContext.Provider value={{ token, login, logout }}>
       {children}
@@ -24,6 +22,12 @@ export function AuthProvider({ children }) {
   )
 }
 
-export function useAuth() {
-  return useContext(AuthContext)
+export function useTokenContext() {
+  const tokenContext = useContext(AuthContext)
+
+  if (tokenContext === undefined) {
+    throw new Error('useTokenContext must be used within a TokenProvider')
+  }
+
+  return tokenContext
 }
