@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { useState } from 'react'
 import { apiFetch } from '../api/client'
 import { useTokenContext } from '../context/AuthContext'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Navigate } from 'react-router-dom'
 
 
 export default function Login() {
@@ -10,8 +10,8 @@ export default function Login() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [result, setResult] = useState(null)
-  const { login } = useTokenContext() // Use the useTokenContext hook to access the login function
-  const navigate = useNavigate()   
+  const { token, login } = useTokenContext() // Use the useTokenContext hook to access the login function
+  const navigate = useNavigate()
 
   async function handleSubmit(event) {
         event.preventDefault()
@@ -22,7 +22,6 @@ export default function Login() {
         method: 'POST',
         body: { username, password },
       }) 
-      setResult(data)
       login(data.access_token)
       navigate('/tasks') // Navigate to the tasks page after successful login
 
@@ -34,8 +33,12 @@ export default function Login() {
 
     }
 
+  // Already signed in — no reason to show the form again.
+  if (token) return <Navigate to="/tasks" replace />
+
   return (
     <div>
+
       <form onSubmit={handleSubmit}>
         <div>
           <label>Username</label>

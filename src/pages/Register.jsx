@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
 import { apiFetch } from '../api/client'
-import { useNavigate } from 'react-router-dom'
+import { useTokenContext } from '../context/AuthContext'
+import { useNavigate, Navigate } from 'react-router-dom'
 
 
 
@@ -9,7 +10,8 @@ export default function Register() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [result, setResult] = useState(null)
-  const navigate = useNavigate()   
+  const { token } = useTokenContext()
+  const navigate = useNavigate()
 
 
     async function handleSubmit(event) {
@@ -32,6 +34,10 @@ export default function Register() {
         }
   
       }
+
+    //if already signed in redirects to tasks page
+  if (token) return <Navigate to="/tasks" replace />
+
   return (
     <div>
       <form onSubmit={handleSubmit} >
@@ -51,7 +57,6 @@ export default function Register() {
       <p>
      Already have an account? <Link to="/login">Login</Link>
       </p>
-      {result && <pre>{JSON.stringify(result, null, 2)}</pre>}
 
     </div>
   )
