@@ -33,7 +33,7 @@ export default function Login() {
 
     }
 
-  // Already signed in — no reason to show the form again.
+    //if already signed in redirects to tasks page
   if (token) return <Navigate to="/tasks" replace />
 
   return (

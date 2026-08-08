@@ -11,3 +11,12 @@ export function getTask(token, taskId) {
 export function createTask(token, task) {
   return apiFetch('/tasks', { method: 'POST', body: task, token })
 }
+
+export function updateTask(token, taskId, changes) {
+  return apiFetch(`/tasks/${taskId}`, { method: 'PATCH', body: changes, token })
+}
+
+export function deleteTask(token, taskId) {
+  return apiFetch(`/tasks/${taskId}`, { method: 'DELETE', token })
+}
+
