@@ -18,9 +18,7 @@ export default function TaskDetail() {
   const [saving, setSaving] = useState(false)
 
   const load = useCallback(async () => {
-    // Two calls: the task itself (so a bad id still gives a clean 404) and the
-    // full list, filtered down to this task's children. There is no
-    // GET /tasks/{id}/subtasks endpoint yet.
+
     const [current, all] = await Promise.all([
       getTask(token, taskId),
       listTasks(token),
