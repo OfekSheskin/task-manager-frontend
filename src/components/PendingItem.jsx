@@ -1,12 +1,13 @@
 
-export default function PendingItem({pending}){
+export default function PendingItem({ pending, onApprove, onDeny }) {
       return (
         <div>
           <h3>
             {pending.requester_username}
           </h3>
-          <p>{pending.status}</p>
+          <button onClick={() => onApprove(pending)}>Approve</button>
+          <button onClick={() => onDeny(pending)}>Deny</button>
         </div>
-      ) 
+      )
 
 }
