@@ -17,8 +17,7 @@ export default function Friends() {
   const [pending, setPending] = useState([])
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(true)
-  // Kept apart from `error`: a failed action shouldn't hide lists that
-  // are still valid on screen.
+
   const [actionError, setActionError] = useState(null)
   const { token } = useTokenContext()
 
@@ -47,15 +46,12 @@ export default function Friends() {
     }, [token])
 
 
-  // No state to update: the request shows up in the addressee's pending
-  // list, not ours. Errors bubble up so the form can display them.
   async function handleSendRequest(username) {
     await sendFriendRequest(token, username)
   }
 
   // Approving and denying hit the same endpoint, so one handler covers
-  // both. The whole row is passed in because the PATCH response has no
-  // username and an approved request has to become a friend right here.
+  // both. 
   async function handleAnswer(request, status) {
     try {
       await answerFriendRequest(token, request.requester_id, status)

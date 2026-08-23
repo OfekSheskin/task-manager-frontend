@@ -8,8 +8,7 @@ export default function AddFriendForm({ onSend }) {
   const [error, setError] = useState(null)
   const [sent, setSent] = useState(null)
 
-  // Sending a request changes nothing on this page — the new row lands in the
-  // other user's pending list — so the confirmation is the only feedback.
+
   async function handleSendRequest(event) {
     event.preventDefault()
     if (!username.trim()) return
