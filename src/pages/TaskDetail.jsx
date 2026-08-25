@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { getTask, listTasks, createTask, updateTask, deleteTask, listShares, shareTask, unshareTask } from '../api/tasks'
 import {listFriends} from '../api/friends'
+import { listLabels, attachLabel, detachLabel } from '../api/labels'
 import { useTokenContext } from '../context/AuthContext'
 
 import NewTaskForm from '../components/NewTaskForm'
@@ -23,19 +24,25 @@ export default function TaskDetail() {
   const [selectedFriend, setSelectedFriend] = useState('')
   const [shareError, setShareError] = useState(null)
   const [sharing, setSharing] = useState(false)
+  const [labels, setLabels] = useState([])
+  const [selectedLabel, setSelectedLabel] = useState('')
+  const [labelError, setLabelError] = useState(null)
+  const [labeling, setLabeling] = useState(false)
 
   const load = useCallback(async () => {
 
-    const [current, all, taskShares, myFriends] = await Promise.all([
+    const [current, all, taskShares, myFriends, myLabels] = await Promise.all([
       getTask(token, taskId),
       listTasks(token),
       listShares(token,taskId),
-      listFriends(token)
+      listFriends(token),
+      listLabels(token)
     ])
     setTask(current)
     setSubtasks(all.filter((t) => t.parent_task_id === current.task_id))
     setShares(taskShares)
     setFriends(myFriends)
+    setLabels(myLabels)
   }, [token, taskId])
 
   useEffect(() => {
@@ -149,6 +156,50 @@ export default function TaskDetail() {
     }
   }
 
+  // Derived, not state: labels of mine that are not on the task yet. Labels are
+  // owned per user, so a shared task can also carry labels belonging to the other
+  // side -- those show up but are not mine to detach, hence the id set below.
+  const myLabelIds = new Set(labels.map((label) => label.label_id))
+  const availableLabels = labels.filter(
+    (label) => !task?.labels.some((attached) => attached.label_id === label.label_id)
+  )
+
+  async function handleAttachLabel(event) {
+    event.preventDefault()
+    if (!selectedLabel) return
+
+    setLabeling(true)
+    try {
+      // Attaching answers with the whole updated task, so the response replaces
+      // the task in state and the chip list below re-renders from it.
+      const updated = await attachLabel(token, task.task_id, Number(selectedLabel))
+      setTask(updated)
+      setSelectedLabel('')
+      setLabelError(null)
+    }
+    catch (error) {
+      setLabelError(error.message)
+    }
+    finally {
+      setLabeling(false)
+    }
+  }
+
+  async function handleDetachLabel(labelId) {
+    try {
+      // Detaching answers 204 -- no body to put in state, so drop the label here.
+      await detachLabel(token, task.task_id, labelId)
+      setTask((current) => ({
+        ...current,
+        labels: current.labels.filter((label) => label.label_id !== labelId),
+      }))
+      setLabelError(null)
+    }
+    catch (error) {
+      setLabelError(error.message)
+    }
+  }
+
   if (loading) return <p>Loading task...</p>
   if (error && !task) return <p>Error: {error}</p>
   if (!task) return null
@@ -181,6 +232,54 @@ export default function TaskDetail() {
       </div>
 
       {error && <p>Error: {error}</p>}
+
+      <hr />
+
+      <h3>Labels</h3>
+
+      {task.labels.length === 0 && <p>No labels on this task</p>}
+
+      {task.labels.map((label) => (
+        <span key={label.label_id}>
+          <span style={{ color: label.label_color }}>■</span>
+          {' '}
+          {label.label_name}
+          {' '}
+          {myLabelIds.has(label.label_id) && (
+            <button onClick={() => handleDetachLabel(label.label_id)}>x</button>
+          )}
+          {'  '}
+        </span>
+      ))}
+
+      {labels.length === 0 && (
+        <p>
+          You have no labels yet — create some on the <Link to="/labels">Labels page</Link>.
+        </p>
+      )}
+
+      {labels.length > 0 && availableLabels.length === 0 && (
+        <p>All of your labels are already on this task.</p>
+      )}
+
+      {availableLabels.length > 0 && (
+        <form onSubmit={handleAttachLabel}>
+          <select value={selectedLabel} onChange={(e) => setSelectedLabel(e.target.value)}>
+            <option value="">Choose a label...</option>
+            {availableLabels.map((label) => (
+              <option key={label.label_id} value={label.label_id}>
+                {label.label_name}
+              </option>
+            ))}
+          </select>
+          {' '}
+          <button type="submit" disabled={labeling || !selectedLabel}>
+            {labeling ? 'Adding...' : 'Add label'}
+          </button>
+        </form>
+      )}
+
+      {labelError && <p>Error: {labelError}</p>}
 
       <hr />
 
