@@ -10,6 +10,7 @@ import Tasks from './pages/Tasks'
 import TaskDetail from './pages/TaskDetail'
 import TaskEdit from './pages/TaskEdit'
 import Friends from './pages/Friends'
+import Labels from './pages/Labels'
 import NotFound from './pages/NotFound'
 import './index.css'
 
@@ -34,6 +35,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <Route path="/tasks/:taskId" element={<TaskDetail />} />
             <Route path="/tasks/:taskId/edit" element={<TaskEdit />} />
             <Route path="/friends" element={<Friends />} />
+            <Route path="/labels" element={<Labels />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

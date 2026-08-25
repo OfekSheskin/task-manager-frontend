@@ -18,6 +18,8 @@ export default function Header() {
         {' | '}
         <Link to="/friends">Friends</Link>
         {' | '}
+        <Link to="/labels">Labels</Link>
+        {' | '}
         <button onClick={handleLogout}>Log out</button>
       </nav>
       <hr />
