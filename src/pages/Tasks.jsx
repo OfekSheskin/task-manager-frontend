@@ -15,7 +15,7 @@ export default function Tasks() {
   const [selectedLabel, setSelectedLabel] = useState('')
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(true)
-  const { token } = useTokenContext()
+  const { token, user } = useTokenContext()
 
   useEffect(() => {
     async function fetchTasks() {
@@ -47,7 +47,16 @@ export default function Tasks() {
   }
 
   async function handleDelete(taskId) {
-    if (!window.confirm('Delete this task and all of its subtasks?')) return
+    // The list only shows root tasks, so a task this user does not own is one
+    // shared with them: deleting it drops their share, it does not delete
+    // anything for the owner. Say so instead of warning about subtasks.
+    const target = tasks.find((task) => task.task_id === taskId)
+
+    const message = target && target.owner_id !== user.user_id
+      ? 'Remove this task from your list? It stays with the owner and everyone else it is shared with.'
+      : 'Delete this task and all of its subtasks?'
+
+    if (!window.confirm(message)) return
 
     try {
       await deleteTask(token, taskId)
@@ -105,7 +114,12 @@ export default function Tasks() {
 
       {!loading && !error &&
         visibleTasks.map((task) => (
-          <TaskItem key={task.task_id} task={task} onDelete={handleDelete} />
+          <TaskItem
+            key={task.task_id}
+            task={task}
+            leavesShare={task.owner_id !== user.user_id}
+            onDelete={handleDelete}
+          />
         ))
       }
     </div>

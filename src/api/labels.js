@@ -16,8 +16,6 @@ export function deleteLabel(token, labelId) {
   return apiFetch(`/labels/${labelId}`, { method: 'DELETE', token })
 }
 
-// Attaching and detaching live under /tasks/{id}/labels/{label_id}.
-// Attaching answers with the whole updated task; detaching answers 204.
 
 export function attachLabel(token, taskId, labelId) {
   return apiFetch(`/tasks/${taskId}/labels/${labelId}`, { method: 'POST', token })

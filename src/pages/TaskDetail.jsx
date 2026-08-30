@@ -104,8 +104,19 @@ export default function TaskDetail() {
     }
   }
 
+  // A shared (non-owner) user deleting a root task only drops their own share --
+  // the task itself stays for everyone else. Owners, and anyone deleting a
+  // subtask, really do remove the task and its whole subtree.
+  const leavesShareOnDelete = task
+    && task.owner_id !== user.user_id
+    && task.parent_task_id === null
+
   async function handleDeleteTask() {
-    if (!window.confirm('Delete this task and all of its subtasks?')) return
+    const message = leavesShareOnDelete
+      ? 'Remove this task from your list? It stays with the owner and everyone else it is shared with.'
+      : 'Delete this task and all of its subtasks?'
+
+    if (!window.confirm(message)) return
 
     try {
       await deleteTask(token, task.task_id)
@@ -137,6 +148,13 @@ export default function TaskDetail() {
     }
     catch (error) {
       setShareError(error.message)
+      try {
+        await load()
+        setSelectedFriend('')
+      }
+      catch {
+        // Keep the share error on screen; the refresh is best effort.
+      }
     }
     finally {
       setSharing(false)
@@ -156,10 +174,6 @@ export default function TaskDetail() {
     }
   }
 
-  // Derived, not state: labels of mine that are not on the task yet. Labels are
-  // owned per user, so a shared task can also carry labels belonging to the other
-  // side -- those show up but are not mine to detach, hence the id set below.
-  const myLabelIds = new Set(labels.map((label) => label.label_id))
   const availableLabels = labels.filter(
     (label) => !task?.labels.some((attached) => attached.label_id === label.label_id)
   )
@@ -228,7 +242,9 @@ export default function TaskDetail() {
         {' '}
         <Link to={`/tasks/${task.task_id}/edit`}>Edit</Link>
         {' '}
-        <button onClick={handleDeleteTask}>Delete</button>
+        <button onClick={handleDeleteTask}>
+          {leavesShareOnDelete ? 'Leave shared task' : 'Delete'}
+        </button>
       </div>
 
       {error && <p>Error: {error}</p>}
@@ -245,9 +261,7 @@ export default function TaskDetail() {
           {' '}
           {label.label_name}
           {' '}
-          {myLabelIds.has(label.label_id) && (
-            <button onClick={() => handleDetachLabel(label.label_id)}>x</button>
-          )}
+          <button onClick={() => handleDetachLabel(label.label_id)}>x</button>
           {'  '}
         </span>
       ))}

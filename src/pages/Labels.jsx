@@ -30,8 +30,7 @@ export default function Labels() {
     fetchLabels()
   }, [token])
 
-  // POST /labels answers with the created label, so it goes straight into
-  // state -- no refetch. The error is left to bubble up to the form.
+
   async function handleCreate(newLabel) {
     const created = await createLabel(token, newLabel)
     setLabels((current) => [...current, created])

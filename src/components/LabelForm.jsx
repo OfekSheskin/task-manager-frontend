@@ -1,7 +1,6 @@
 import { useState } from 'react'
 
-// The backend validates the color against ^#[0-9A-Fa-f]{6}$, which is exactly
-// what <input type="color"> produces -- so the format can never be wrong here.
+
 const DEFAULT_COLOR = '#3B82F6'
 
 

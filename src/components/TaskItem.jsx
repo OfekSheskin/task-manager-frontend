@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 
-export default function TaskItem({ task, onDelete }) {
+export default function TaskItem({ task, leavesShare = false, onDelete }) {
 
   return (
     <div>
@@ -24,7 +24,9 @@ export default function TaskItem({ task, onDelete }) {
       <p>Created: {task.created_at}</p>
       <Link to={`/tasks/${task.task_id}/edit`}>Edit</Link>
       {' '}
-      <button onClick={() => onDelete(task.task_id)}>Delete</button>
+      <button onClick={() => onDelete(task.task_id)}>
+        {leavesShare ? 'Leave shared task' : 'Delete'}
+      </button>
     </div>
   )
 }

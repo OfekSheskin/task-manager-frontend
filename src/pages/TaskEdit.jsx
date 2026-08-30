@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
-import { getTask, listTasks, updateTask } from '../api/tasks'
+import { getTask, updateTask } from '../api/tasks'
 import { useTokenContext } from '../context/AuthContext'
 
 const STATUSES = ['To Do', 'Done', 'Cancelled']
@@ -14,7 +14,6 @@ export default function TaskEdit() {
 
 
   const [original, setOriginal] = useState(null)
-  const [allTasks, setAllTasks] = useState([])
   const [form, setForm] = useState(null)
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -26,19 +25,14 @@ export default function TaskEdit() {
     async function fetchAll() {
       setLoading(true)
       try {
-        const [task, all] = await Promise.all([
-          getTask(token, taskId),
-          listTasks(token),
-        ])
+        const task = await getTask(token, taskId)
         if (cancelled) return
         setOriginal(task)
-        setAllTasks(all)
         setForm({
           task_title: task.task_title,
           task_info: task.task_info ?? '',
           status: task.status,
           cancel_reason: task.cancel_reason ?? '',
-          parent_task_id: task.parent_task_id ?? '',
         })
         setError(null)
       }
@@ -87,9 +81,6 @@ export default function TaskEdit() {
   if (loading) return <p>Loading task...</p>
   if (error && !form) return <p>Error: {error}</p>
   if (!form) return null
-
-  // A task cannot be its own parent; the backend also rejects descendants.
-  const parentOptions = allTasks.filter((t) => t.task_id !== original.task_id)
 
   return (
     <div>
@@ -143,22 +134,6 @@ export default function TaskEdit() {
           </div>
         )}
 
-        <div>
-          <label htmlFor="parent_task_id">Parent task</label>
-          <select
-            id="parent_task_id"
-            value={form.parent_task_id}
-            onChange={(e) => setField('parent_task_id', e.target.value)}
-          >
-            <option value="">No parent (top level)</option>
-            {parentOptions.map((task) => (
-              <option key={task.task_id} value={task.task_id}>
-                {task.task_title}
-              </option>
-            ))}
-          </select>
-        </div>
-
         <button type="submit" disabled={saving}>
           {saving ? 'Saving...' : 'Save'}
         </button>
@@ -181,7 +156,6 @@ function buildChanges(original, form) {
     task_info: form.task_info.trim() || null,
     status: form.status,
     cancel_reason: form.status === 'Cancelled' ? (form.cancel_reason.trim() || null) : null,
-    parent_task_id: form.parent_task_id === '' ? null : Number(form.parent_task_id),
   }
 
   const changes = {}
