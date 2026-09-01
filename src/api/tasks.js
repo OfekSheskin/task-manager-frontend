@@ -37,3 +37,19 @@ export function shareTask(token, taskId, sharedUsername) {
 export function unshareTask(token, taskId, sharedUserId) {
   return apiFetch(`/tasks/${taskId}/shares/${sharedUserId}`, { method: 'DELETE', token })
 }
+
+// Blocking dependencies live under /tasks/{id}/blockers, same as shares.
+// Add and remove answer with the whole updated task; the list answers with the
+// blocking tasks themselves.
+
+export function listBlockers(token, taskId) {
+  return apiFetch(`/tasks/${taskId}/blockers`, { token })
+}
+
+export function addBlocker(token, taskId, blockerId) {
+  return apiFetch(`/tasks/${taskId}/blockers/${blockerId}`, { method: 'POST', token })
+}
+
+export function removeBlocker(token, taskId, blockerId) {
+  return apiFetch(`/tasks/${taskId}/blockers/${blockerId}`, { method: 'DELETE', token })
+}
