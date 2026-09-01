@@ -1,6 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
-import { getTask, listTasks, createTask, updateTask, deleteTask, listShares, shareTask, unshareTask } from '../api/tasks'
+import {
+  getTask, listTasks, createTask, updateTask, deleteTask,
+  listShares, shareTask, unshareTask,
+  listBlockers, addBlocker, removeBlocker,
+} from '../api/tasks'
 import {listFriends} from '../api/friends'
 import { listLabels, attachLabel, detachLabel } from '../api/labels'
 import { useTokenContext } from '../context/AuthContext'
@@ -28,21 +32,31 @@ export default function TaskDetail() {
   const [selectedLabel, setSelectedLabel] = useState('')
   const [labelError, setLabelError] = useState(null)
   const [labeling, setLabeling] = useState(false)
+  // Every task the user can see, kept so the blocker picker has something to
+  // offer -- the same request that already feeds the subtask list.
+  const [allTasks, setAllTasks] = useState([])
+  const [blockers, setBlockers] = useState([])
+  const [selectedBlocker, setSelectedBlocker] = useState('')
+  const [blockerError, setBlockerError] = useState(null)
+  const [blocking, setBlocking] = useState(false)
 
   const load = useCallback(async () => {
 
-    const [current, all, taskShares, myFriends, myLabels] = await Promise.all([
+    const [current, all, taskShares, myFriends, myLabels, myBlockers] = await Promise.all([
       getTask(token, taskId),
       listTasks(token),
       listShares(token,taskId),
       listFriends(token),
-      listLabels(token)
+      listLabels(token),
+      listBlockers(token, taskId)
     ])
     setTask(current)
+    setAllTasks(all)
     setSubtasks(all.filter((t) => t.parent_task_id === current.task_id))
     setShares(taskShares)
     setFriends(myFriends)
     setLabels(myLabels)
+    setBlockers(myBlockers)
   }, [token, taskId])
 
   useEffect(() => {
@@ -214,6 +228,49 @@ export default function TaskDetail() {
     }
   }
 
+  // Derived, not state: anything that could be picked as a blocker. Self and
+  // the current blockers are dropped here because both answer 400. Cycles and
+  // ancestor-blocks-descendant are left to the backend rather than reimplemented
+  // -- there is one copy of that rule, and it lives in the service layer.
+  const availableBlockers = allTasks.filter(
+    (candidate) =>
+      candidate.task_id !== task?.task_id &&
+      !blockers.some((blocker) => blocker.task_id === candidate.task_id)
+  )
+
+  // Both handlers reload instead of patching state from the response: adding or
+  // removing a blocker changes is_blocked for this task *and* for every subtask
+  // under it (blocked propagates down), and the response only carries this task.
+  async function handleAddBlocker(event) {
+    event.preventDefault()
+    if (!selectedBlocker) return
+
+    setBlocking(true)
+    try {
+      await addBlocker(token, task.task_id, Number(selectedBlocker))
+      await load()
+      setSelectedBlocker('')
+      setBlockerError(null)
+    }
+    catch (error) {
+      setBlockerError(error.message)
+    }
+    finally {
+      setBlocking(false)
+    }
+  }
+
+  async function handleRemoveBlocker(blockerId) {
+    try {
+      await removeBlocker(token, task.task_id, blockerId)
+      await load()
+      setBlockerError(null)
+    }
+    catch (error) {
+      setBlockerError(error.message)
+    }
+  }
+
   if (loading) return <p>Loading task...</p>
   if (error && !task) return <p>Error: {error}</p>
   if (!task) return null
@@ -224,7 +281,7 @@ export default function TaskDetail() {
 
       <h2>{task.task_title}</h2>
       {task.task_info && <p>{task.task_info}</p>}
-      <p>Status: {task.status}</p>
+      <p>Status: {task.status}{task.is_blocked && ' — Blocked'}</p>
       <p>Created: {task.created_at}</p>
       {task.done_date && <p>Done: {task.done_date}</p>}
       {task.cancel_reason && <p>Cancel reason: {task.cancel_reason}</p>}
@@ -236,9 +293,17 @@ export default function TaskDetail() {
       )}
 
       <div>
-        <button onClick={handleMarkDone} disabled={saving || task.status === 'Done'}>
+        {/* The backend refuses Done on a blocked task with a 400 anyway; the
+            button is disabled so the reason is visible before the click. */}
+        <button
+          onClick={handleMarkDone}
+          disabled={saving || task.status === 'Done' || task.is_blocked}
+        >
           {saving ? 'Saving...' : 'Mark as Done'}
         </button>
+        {task.is_blocked && (
+          <p>Blocked by a dependency that is still To Do — see “Depends on” below.</p>
+        )}
         {' '}
         <Link to={`/tasks/${task.task_id}/edit`}>Edit</Link>
         {' '}
@@ -297,6 +362,46 @@ export default function TaskDetail() {
 
       <hr />
 
+      <h3>Depends on</h3>
+
+      {blockers.length === 0 && <p>This task does not depend on anything</p>}
+
+      {blockers.map((blocker) => (
+        <div key={blocker.task_id}>
+          <Link to={`/tasks/${blocker.task_id}`}>{blocker.task_title}</Link>
+          {' — '}
+          {blocker.status}
+          {' '}
+          <button onClick={() => handleRemoveBlocker(blocker.task_id)}>Remove</button>
+        </div>
+      ))}
+
+      {availableBlockers.length === 0 && <p>No other task is available to depend on.</p>}
+
+      {availableBlockers.length > 0 && (
+        <form onSubmit={handleAddBlocker}>
+          <select
+            value={selectedBlocker}
+            onChange={(e) => setSelectedBlocker(e.target.value)}
+          >
+            <option value="">Choose a task...</option>
+            {availableBlockers.map((candidate) => (
+              <option key={candidate.task_id} value={candidate.task_id}>
+                {candidate.task_title}
+              </option>
+            ))}
+          </select>
+          {' '}
+          <button type="submit" disabled={blocking || !selectedBlocker}>
+            {blocking ? 'Adding...' : 'Add dependency'}
+          </button>
+        </form>
+      )}
+
+      {blockerError && <p>Error: {blockerError}</p>}
+
+      <hr />
+
       <h3>Subtasks</h3>
 
       <NewTaskForm parentTaskId={task.task_id} onCreate={handleAddSubtask} />
@@ -307,7 +412,7 @@ export default function TaskDetail() {
         <div key={subtask.task_id}>
           <Link to={`/tasks/${subtask.task_id}`}>{subtask.task_title}</Link>
           {' — '}
-          {subtask.status}
+          {subtask.status}{subtask.is_blocked && ' — Blocked'}
           {' '}
           <Link to={`/tasks/${subtask.task_id}/edit`}>Edit</Link>
           {' '}

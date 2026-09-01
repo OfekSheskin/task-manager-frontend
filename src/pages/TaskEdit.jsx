@@ -117,9 +117,21 @@ export default function TaskEdit() {
             onChange={(e) => setField('status', e.target.value)}
           >
             {STATUSES.map((status) => (
-              <option key={status} value={status}>{status}</option>
+              <option
+                key={status}
+                value={status}
+                // A blocked task cannot be completed. The backend refuses it with
+                // a 400 either way; the option is off so the rule shows up here
+                // the same way it does on the task page.
+                disabled={status === 'Done' && original.is_blocked}
+              >
+                {status}
+              </option>
             ))}
           </select>
+          {original.is_blocked && (
+            <p>This task is blocked, so it cannot be set to Done yet.</p>
+          )}
         </div>
 
         {form.status === 'Cancelled' && (

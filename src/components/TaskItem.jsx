@@ -7,7 +7,9 @@ export default function TaskItem({ task, leavesShare = false, onDelete }) {
       <h3>
         <Link to={`/tasks/${task.task_id}`}>{task.task_title}</Link>
       </h3>
-      <p>Status: {task.status}</p>
+      {/* is_blocked is derived by the backend on every response, so the flag is
+          only rendered here -- never computed or stored on the client. */}
+      <p>Status: {task.status}{task.is_blocked && ' — Blocked'}</p>
       {task.labels.length > 0 && (
         <p>
           {task.labels.map((label) => (
