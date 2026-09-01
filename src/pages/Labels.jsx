@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react'
-import { listLabels, createLabel } from '../api/labels'
+import { listLabels, createLabel, updateLabel, deleteLabel } from '../api/labels'
 import { useTokenContext } from '../context/AuthContext'
 import LabelForm from '../components/LabelForm'
+import LabelItem from '../components/LabelItem'
 
 
 export default function Labels() {
 
   const [labels, setLabels] = useState([])
   const [error, setError] = useState(null)
+  const [actionError, setActionError] = useState(null)
   const [loading, setLoading] = useState(true)
   const { token } = useTokenContext()
 
@@ -36,6 +38,44 @@ export default function Labels() {
     setLabels((current) => [...current, created])
   }
 
+  // The PATCH answers with the whole updated label, so the response replaces the
+  // row in state instead of refetching the list. The error is rethrown because
+  // the row keeps its own form open and shows it next to the inputs.
+  async function handleUpdate(labelId, changes) {
+    try {
+      const updated = await updateLabel(token, labelId, changes)
+      setLabels((current) =>
+        current.map((label) => (label.label_id === labelId ? updated : label))
+      )
+      setActionError(null)
+    }
+    catch (err) {
+      setActionError(null)
+      throw err
+    }
+  }
+
+  // Deleting a label detaches it from every task it was on -- the FK on
+  // task_labels cascades -- so the confirm has to say that, not just "delete".
+  async function handleDelete(label) {
+    const message =
+      `Delete the label "${label.label_name}"?` +
+      ' It will also be removed from every task it is on.'
+
+    if (!window.confirm(message)) return
+
+    try {
+      await deleteLabel(token, label.label_id)
+      setLabels((current) =>
+        current.filter((row) => row.label_id !== label.label_id)
+      )
+      setActionError(null)
+    }
+    catch (err) {
+      setActionError(err.message)
+    }
+  }
+
   return (
     <div>
       <h1>Labels</h1>
@@ -44,15 +84,17 @@ export default function Labels() {
 
       {loading && <p>Loading labels...</p>}
       {error && <p>Error: {error}</p>}
+      {actionError && <p>Error: {actionError}</p>}
       {!loading && !error && labels.length === 0 && <p>You have no labels yet</p>}
 
       {!loading && !error &&
         labels.map((label) => (
-          <div key={label.label_id}>
-            <span style={{ color: label.label_color }}>■</span>
-            {' '}
-            {label.label_name}
-          </div>
+          <LabelItem
+            key={label.label_id}
+            label={label}
+            onUpdate={handleUpdate}
+            onDelete={handleDelete}
+          />
         ))
       }
     </div>
