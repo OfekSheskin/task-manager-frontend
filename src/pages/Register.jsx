@@ -9,7 +9,7 @@ import { useNavigate, Navigate } from 'react-router-dom'
 export default function Register() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [result, setResult] = useState(null)
+  const [error, setError] = useState(null)
   const { token } = useTokenContext()
   const navigate = useNavigate()
 
@@ -19,18 +19,17 @@ export default function Register() {
   
   
       try{
-          const data = await apiFetch('/auth/register', {
+          await apiFetch('/auth/register', {
           method: 'POST',
           body: { username, password },
         }) 
-        setResult(data) 
         navigate('/login')
 
   
       }
-        catch (error) {
-          console.error('Registration failed:', error)
-          setResult({ error: error.message })
+        catch (err) {
+          console.error('Registration failed:', err)
+          setError(err.message)
         }
   
       }
@@ -40,6 +39,7 @@ export default function Register() {
 
   return (
     <div>
+      <h1>Register</h1>
       <form onSubmit={handleSubmit} >
         <div>
           <label>Username</label>
@@ -52,8 +52,9 @@ export default function Register() {
             onChange={(e) => setPassword(e.target.value)} />
         </div>
         <button type="submit">Register</button>
+
+        {error && <p>Error: {error}</p>}
       </form>
-      <h1>Register</h1>
       <p>
      Already have an account? <Link to="/login">Login</Link>
       </p>

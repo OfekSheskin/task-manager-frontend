@@ -9,7 +9,7 @@ export default function Login() {
 
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [result, setResult] = useState(null)
+  const [error, setError] = useState(null)
   const { token, login } = useTokenContext() // Use the useTokenContext hook to access the login function
   const navigate = useNavigate()
 
@@ -26,9 +26,9 @@ export default function Login() {
       navigate('/tasks') // Navigate to the tasks page after successful login
 
     }
-      catch (error) {
-        console.error('Login failed:', error)
-        setResult({ error: error.message })
+      catch (err) {
+        console.error('Login failed:', err)
+        setError(err.message)
       }
 
     }
@@ -38,6 +38,7 @@ export default function Login() {
 
   return (
     <div>
+      <h1>Login</h1>
 
       <form onSubmit={handleSubmit}>
         <div>
@@ -51,8 +52,9 @@ export default function Login() {
             onChange={(e) => setPassword(e.target.value)} />
         </div>
         <button type="submit">Login</button>
+
+        {error && <p>Error: {error}</p>}
       </form>
-      <h1>Login</h1>
       <p>
         Don't have an account? <Link to="/register">Register</Link>
       </p>
