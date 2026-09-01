@@ -13,6 +13,9 @@ export default function Tasks() {
   // '' means "no filter". A <select> value is always a string, so the id kept
   // here is a string too and gets compared as one further down.
   const [selectedLabel, setSelectedLabel] = useState('')
+  // Second filter, same idea: a flag that the derivation below reads, not a
+  // separate list of tasks to keep in sync.
+  const [hideBlocked, setHideBlocked] = useState(false)
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(true)
   const { token, user } = useTokenContext()
@@ -71,9 +74,10 @@ export default function Tasks() {
 
   // GET /tasks returns every task the user owns, subtasks included. The list
   // page only shows roots — subtasks are shown inside their parent's page.
-  // The label filter is chained onto the same derivation instead of living in
-  // its own state, so there is only ever one list to keep correct.
-  // TaskResponse already carries its labels, so no extra request is needed.
+  // Both filters are chained onto the same derivation instead of living in
+  // their own state, so there is only ever one list to keep correct.
+  // TaskResponse already carries its labels and its derived is_blocked, so
+  // neither filter needs an extra request.
   const visibleTasks = tasks
     .filter((task) => task.parent_task_id === null)
     .filter(
@@ -81,6 +85,7 @@ export default function Tasks() {
         !selectedLabel ||
         task.labels.some((label) => String(label.label_id) === selectedLabel)
     )
+    .filter((task) => !hideBlocked || !task.is_blocked)
 
   return (
     <div>
@@ -106,10 +111,27 @@ export default function Tasks() {
         </div>
       )}
 
+      <div>
+        <label htmlFor="hide-blocked">
+          <input
+            id="hide-blocked"
+            type="checkbox"
+            checked={hideBlocked}
+            onChange={(e) => setHideBlocked(e.target.checked)}
+          />
+          {' '}
+          Hide blocked tasks
+        </label>
+      </div>
+
       {loading && <p>Loading tasks...</p>}
       {error && <p>Error: {error}</p>}
       {!loading && visibleTasks.length === 0 && (
-        <p>{selectedLabel ? 'No tasks with that label' : 'You have no tasks to show'}</p>
+        <p>
+          {selectedLabel || hideBlocked
+            ? 'No tasks match the current filters'
+            : 'You have no tasks to show'}
+        </p>
       )}
 
       {!loading && !error &&
