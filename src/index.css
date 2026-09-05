@@ -1,5 +1,544 @@
+/* tokens */
+:root {
+  --bg:      #f6f5f3;
+  --surface: #ffffff;
+  --border:  #dcd9d4;
+  --text:    #1f1f1e;
+  --muted:   #6b6862;
+  --accent:  #2f5d8a;
+  --accent-dark: #24486b;
+  --danger:  #a3382f;
+  --done:    #3d6b47;
+}
+
+/* base */
+* {
+  box-sizing: border-box;
+}
+
 body {
-  font-family: system-ui, -apple-system, sans-serif;
   margin: 0;
-  padding: 1rem;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+h1, h2, h3 {
+  font-weight: 600;
+  margin: 0 0 16px 0;
+}
+
+h1 { font-size: 1.6rem; }
+h2 { font-size: 1.25rem; }
+h3 { font-size: 1.05rem; }
+
+p {
+  margin: 0 0 12px 0;
+}
+
+a {
+  color: var(--accent);
+  transition: background-color 0.15s, color 0.15s;
+}
+
+a:hover {
+  color: var(--accent-dark);
+}
+
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 24px 0;
+}
+
+/* layout */
+.page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+/* The bar itself is full-width so its bottom border runs edge to edge; the
+   inner row is what lines up with the 900px content column. */
+.nav {
+  background-color: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.nav-links {
+  display: flex;
+  gap: 16px;
+}
+
+.nav-link {
+  text-decoration: none;
+}
+
+.nav-link:hover {
+  text-decoration: underline;
+}
+
+.nav-link-active {
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Pushed to the far end of the nav row, away from the page links. */
+.nav-logout {
+  margin-left: auto;
+}
+
+/* the "Back to ..." link that sits above a detail or edit heading */
+.page-back {
+  display: inline-block;
+  font-size: 0.875rem;
+  margin-bottom: 16px;
+}
+
+.auth-page {
+  max-width: 380px;
+  margin: 0 auto;
+  padding: 32px 16px;
+}
+
+.auth-panel {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 24px;
+}
+
+/* the "no account yet? / already have one?" line under the panel */
+.auth-switch {
+  font-size: 0.875rem;
+  color: var(--muted);
+  margin: 16px 0 0 0;
+}
+
+/* buttons */
+.btn,
+.btn-primary,
+.btn-danger {
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 8px 14px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background-color: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.btn:hover {
+  background-color: var(--bg);
+}
+
+.btn-primary {
+  background-color: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-dark);
+  border-color: var(--accent-dark);
+}
+
+.btn-danger {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.btn-danger:hover {
+  background-color: var(--bg);
+}
+
+/* a disabled button says so by fading, and stops offering the hand cursor */
+.btn:disabled,
+.btn-primary:disabled,
+.btn-danger:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* a link that acts as a button (Edit) has to lose its link styling */
+a.btn {
+  display: inline-block;
+  text-decoration: none;
+  color: var(--text);
+}
+
+/* the row of buttons under a form or inside a card */
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+/* forms */
+.form-row {
+  margin-bottom: 16px;
+}
+
+.form-row label,
+.filter-group label {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+/* One look for every box, dropdown and details area in the app -- put on the
+   element itself, so a new control never needs a new rule to match. */
+input,
+select,
+textarea {
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--text);
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--accent);
+  outline: 1px solid var(--accent);
+}
+
+textarea {
+  resize: vertical;
+}
+
+/* a checkbox keeps the size the browser gives it; a color picker is a swatch */
+input[type="checkbox"] {
+  padding: 0;
+}
+
+input[type="color"] {
+  width: 48px;
+  height: 38px;
+  padding: 2px;
+}
+
+/* Width comes from the container: a field stacked under its label fills the
+   column, while an inline one is sized by the row it sits in. */
+.form-row input,
+.form-row select,
+.form-row textarea,
+.filter-group input,
+.filter-group select,
+.new-task-form input,
+.new-task-form textarea {
+  width: 100%;
+}
+
+.form-error {
+  font-size: 0.875rem;
+  color: var(--danger);
+  margin: 16px 0 0 0;
+}
+
+/* the submit button fills the width of an auth panel */
+.auth-panel .btn-primary {
+  width: 100%;
+}
+
+/* A one-line form: a box or a dropdown, then its button. The box takes the free
+   space, the button and the color swatch keep their own size, and a message
+   under it wraps onto its own line. */
+.inline-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.inline-form input[type="text"],
+.inline-form select {
+  flex: 1 1 200px;
+}
+
+.inline-form p {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+/* when the form *is* the panel there is nothing above it to sit away from */
+.panel.inline-form {
+  margin-top: 0;
+}
+
+/* the new-task box, with the details area and buttons revealed on focus */
+.new-task-form {
+  margin-bottom: 16px;
+}
+
+.new-task-form textarea {
+  margin-top: 12px;
+}
+
+/* The filter bar is a real two-dimensional grid of controls -- fixed columns,
+   rows filled in order -- so it is Grid, while everything else here is Flexbox.
+   One column by default; the second one is added in the responsive section. */
+.filter-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+/* search leads the bar, so it takes the full width of the grid */
+.filter-search {
+  grid-column: 1 / -1;
+}
+
+/* the two date boxes of a "between" filter, side by side with the word "and" */
+.filter-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+/* date inputs are allowed to shrink below their natural width in the flex row */
+.filter-range input {
+  min-width: 0;
+}
+
+/* checkbox + reset button, split off from the grid by a rule */
+.filter-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.filter-actions label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+/* cards + lists */
+
+/* The boxed section a page is built from: a form, the filter bar, or a titled
+   section such as Labels or Subtasks. */
+.panel {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.panel-title {
+  margin: 0 0 16px 0;
+}
+
+/* the last thing in a panel drops its own bottom margin, so the padding
+   underneath it stays the same as everywhere else in the box */
+.panel > :last-child {
+  margin-bottom: 0;
+}
+
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.task-card {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 12px 14px;
+}
+
+/* title on the left, the actions pushed to the right edge */
+.task-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.task-card-title {
+  margin: 0;
+}
+
+.task-card-title a {
+  text-decoration: none;
+}
+
+.task-card-title a:hover {
+  text-decoration: underline;
+}
+
+.task-card-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.task-card-info {
+  margin: 8px 0 0 0;
+}
+
+/* One line of a list that is not a task card: a friend, a pending request, a
+   label, a subtask, a dependency, a share. Rows sit closer together than cards
+   because they read as a list. */
+.item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.item-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 12px 14px;
+}
+
+/* the name of the row, plus anything that belongs next to it */
+.item-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.item-main input[type="text"] {
+  flex: 1 1 160px;
+}
+
+.item-name {
+  font-weight: 600;
+}
+
+.item-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* an error under a row takes the whole width instead of joining the row */
+.item-card .form-error {
+  flex-basis: 100%;
+  margin: 8px 0 0 0;
+}
+
+/* muted text: a whole line the page is saying, or a smaller hint under a control */
+.note {
+  color: var(--muted);
+}
+
+.note-small {
+  font-size: 0.875rem;
+  color: var(--muted);
+  margin: 8px 0 0 0;
+}
+
+/* status + labels */
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.875rem;
+  color: var(--muted);
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+
+.status-done {
+  color: var(--done);
+  border-color: var(--done);
+}
+
+.status-blocked {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+/* the small "x" that takes a label off a task, sitting inside its chip */
+.chip-remove {
+  border: none;
+  background: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 0.875rem;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.chip-remove:hover {
+  color: var(--danger);
+}
+
+/* a cancelled task keeps its row but reads as struck off the list */
+.task-card-cancelled .task-card-title a {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+/* responsive */
+@media (min-width: 700px) {
+  .filter-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  /* the buttons drop under the title or the name instead of squeezing it */
+  .task-card-head,
+  .item-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .filter-actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }

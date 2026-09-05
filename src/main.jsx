@@ -12,6 +12,7 @@ import TaskEdit from './pages/TaskEdit'
 import Friends from './pages/Friends'
 import Labels from './pages/Labels'
 import NotFound from './pages/NotFound'
+import 'bootstrap/dist/css/bootstrap-grid.min.css'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
