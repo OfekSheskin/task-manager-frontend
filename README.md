@@ -31,8 +31,20 @@ npm run build    # production build into dist/
 npm run preview  # serve the production build
 ```
 
-The backend allows `http://localhost:5173` through CORS, so run the client on
-that port during development.
+The backend allows `http://localhost:5173` through CORS by default, so run the
+client on that port during development.
+
+## Deployment
+
+Vite substitutes `import.meta.env` at build time, so `VITE_API_BASE_URL` has to
+be set when the bundle is built, not when it is served. A deployment therefore
+passes it to `npm run build` rather than shipping a `.env` file.
+
+The whole system — this app, the API and the database — is described by the
+Render Blueprint in the backend repository, which supplies that variable from
+the API service it creates alongside this one. Because routing happens in the
+browser, the static host also has to answer every path with `index.html`; the
+Blueprint sets that rewrite.
 
 ## Project layout
 
