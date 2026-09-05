@@ -36,15 +36,19 @@ client on that port during development.
 
 ## Deployment
 
-Vite substitutes `import.meta.env` at build time, so `VITE_API_BASE_URL` has to
-be set when the bundle is built, not when it is served. A deployment therefore
-passes it to `npm run build` rather than shipping a `.env` file.
+The app is deployed on Vercel, which detects Vite, runs `npm run build` and
+serves `dist/` from its CDN. Two things need saying explicitly.
 
-The whole system — this app, the API and the database — is described by the
-Render Blueprint in the backend repository, which supplies that variable from
-the API service it creates alongside this one. Because routing happens in the
-browser, the static host also has to answer every path with `index.html`; the
-Blueprint sets that rewrite.
+**The API address is baked in at build time.** Vite substitutes
+`import.meta.env` when it builds, not when the page is served, so
+`VITE_API_BASE_URL` is set as an environment variable on the Vercel project and
+the app has to be redeployed for a change to it to take effect. The API's
+`CORS_ORIGINS` has to name this site in return, or the browser blocks the calls.
+
+**Routing happens in the browser.** A request for `/tasks/4` is a real HTTP
+request that the file server would answer with a 404, since no such file was
+built. `vercel.json` rewrites every path that does not match a built file to
+`index.html`, which hands the URL to React Router instead.
 
 ## Project layout
 
