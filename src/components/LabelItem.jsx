@@ -47,43 +47,49 @@ export default function LabelItem({ label, onUpdate, onDelete }) {
     }
   }
 
+  // Editing happens in place: the row keeps its shape and swaps the name and
+  // the swatch for the two inputs that change them.
   if (editing) {
     return (
-      <form onSubmit={handleSubmit}>
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          maxLength={50}
-        />
-        {' '}
-        <input
-          type="color"
-          value={color}
-          onChange={(e) => setColor(e.target.value)}
-        />
-        {' '}
-        <button type="submit" disabled={saving || !name.trim()}>
-          {saving ? 'Saving...' : 'Save'}
-        </button>
-        {' '}
-        <button type="button" onClick={() => setEditing(false)} disabled={saving}>
-          Cancel
-        </button>
+      <form className="item-card" onSubmit={handleSubmit}>
+        <div className="item-main">
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            maxLength={50}
+          />
+          <input
+            type="color"
+            value={color}
+            onChange={(e) => setColor(e.target.value)}
+            aria-label="Label color"
+          />
+        </div>
+        <div className="item-actions">
+          <button type="submit" className="btn-primary" disabled={saving || !name.trim()}>
+            {saving ? 'Saving...' : 'Save'}
+          </button>
+          <button type="button" className="btn" onClick={() => setEditing(false)} disabled={saving}>
+            Cancel
+          </button>
+        </div>
 
-        {error && <p>Error: {error}</p>}
+        {error && <p className="form-error">Error: {error}</p>}
       </form>
     )
   }
 
   return (
-    <div>
-      <span style={{ color: label.label_color }}>■</span>
-      {' '}
-      {label.label_name}
-      {' '}
-      <button onClick={startEditing}>Edit</button>
-      {' '}
-      <button onClick={() => onDelete(label)}>Delete</button>
+    <div className="item-card">
+      <div className="item-main">
+        <span style={{ color: label.label_color }}>■</span>
+        <span className="item-name">{label.label_name}</span>
+      </div>
+      <div className="item-actions">
+        <button className="btn" onClick={startEditing}>Edit</button>
+        <button className="btn-danger" onClick={() => onDelete(label)}>Delete</button>
+      </div>
     </div>
   )
 }

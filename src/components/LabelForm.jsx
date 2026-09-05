@@ -36,25 +36,25 @@ export default function LabelForm({ onCreate }) {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form className="panel inline-form" onSubmit={handleSubmit}>
       <input
+        type="text"
         value={name}
         onChange={handleNameChange}
         maxLength={50}
         placeholder="New label name..."
       />
-      {' '}
       <input
         type="color"
         value={color}
         onChange={(e) => setColor(e.target.value)}
+        aria-label="Label color"
       />
-      {' '}
-      <button type="submit" disabled={saving || !name.trim()}>
+      <button type="submit" className="btn-primary" disabled={saving || !name.trim()}>
         {saving ? 'Creating...' : 'Create label'}
       </button>
 
-      {error && <p>Error: {error}</p>}
+      {error && <p className="form-error">Error: {error}</p>}
     </form>
   )
 }

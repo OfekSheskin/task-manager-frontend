@@ -38,8 +38,9 @@ export default function NewTaskForm({ parentTaskId = null, onCreate }) {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form className="new-task-form" onSubmit={handleSubmit}>
       <input
+        type="text"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         onFocus={() => setOpen(true)}
@@ -49,20 +50,23 @@ export default function NewTaskForm({ parentTaskId = null, onCreate }) {
       {open && (
         <>
           <textarea
+            rows="3"
             value={info}
             onChange={(e) => setInfo(e.target.value)}
             placeholder="Details (optional)"
           />
-          <button type="submit" disabled={saving || !title.trim()}>
-            {saving ? 'Adding...' : 'Add'}
-          </button>
-          <button type="button" onClick={reset} disabled={saving}>
-            Cancel
-          </button>
+          <div className="form-actions">
+            <button type="submit" className="btn-primary" disabled={saving || !title.trim()}>
+              {saving ? 'Adding...' : 'Add'}
+            </button>
+            <button type="button" className="btn" onClick={reset} disabled={saving}>
+              Cancel
+            </button>
+          </div>
         </>
       )}
 
-      {error && <p>Error: {error}</p>}
+      {error && <p className="form-error">Error: {error}</p>}
     </form>
   )
 }

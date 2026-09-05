@@ -78,18 +78,18 @@ export default function TaskEdit() {
     }
   }
 
-  if (loading) return <p>Loading task...</p>
-  if (error && !form) return <p>Error: {error}</p>
+  if (loading) return <p className="note">Loading task...</p>
+  if (error && !form) return <p className="form-error">Error: {error}</p>
   if (!form) return null
 
   return (
     <div>
-      <Link to={`/tasks/${taskId}`}>Back to task</Link>
+      <Link className="page-back" to={`/tasks/${taskId}`}>Back to task</Link>
 
-      <h2>Edit task</h2>
+      <h1>Edit task</h1>
 
-      <form onSubmit={handleSubmit}>
-        <div>
+      <form className="panel" onSubmit={handleSubmit}>
+        <div className="form-row">
           <label htmlFor="task_title">Title</label>
           <input
             id="task_title"
@@ -100,16 +100,17 @@ export default function TaskEdit() {
           />
         </div>
 
-        <div>
+        <div className="form-row">
           <label htmlFor="task_info">Details</label>
           <textarea
             id="task_info"
+            rows="4"
             value={form.task_info}
             onChange={(e) => setField('task_info', e.target.value)}
           />
         </div>
 
-        <div>
+        <div className="form-row">
           <label htmlFor="status">Status</label>
           <select
             id="status"
@@ -130,12 +131,12 @@ export default function TaskEdit() {
             ))}
           </select>
           {original.is_blocked && (
-            <p>This task is blocked, so it cannot be set to Done yet.</p>
+            <p className="note-small">This task is blocked, so it cannot be set to Done yet.</p>
           )}
         </div>
 
         {form.status === 'Cancelled' && (
-          <div>
+          <div className="form-row">
             <label htmlFor="cancel_reason">Cancel reason</label>
             <input
               id="cancel_reason"
@@ -146,20 +147,25 @@ export default function TaskEdit() {
           </div>
         )}
 
-        <button type="submit" disabled={saving}>
-          {saving ? 'Saving...' : 'Save'}
-        </button>
-        {' '}
-        <button type="button" onClick={() => navigate(`/tasks/${taskId}`)} disabled={saving}>
-          Cancel
-        </button>
+        <div className="form-actions">
+          <button type="submit" className="btn-primary" disabled={saving}>
+            {saving ? 'Saving...' : 'Save'}
+          </button>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => navigate(`/tasks/${taskId}`)}
+            disabled={saving}
+          >
+            Cancel
+          </button>
+        </div>
 
-        {error && <p>Error: {error}</p>}
+        {error && <p className="form-error">Error: {error}</p>}
       </form>
     </div>
   )
 }
-
 
 
 function buildChanges(original, form) {

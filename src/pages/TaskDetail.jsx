@@ -10,6 +10,7 @@ import { listLabels, attachLabel, detachLabel } from '../api/labels'
 import { useTokenContext } from '../context/AuthContext'
 
 import NewTaskForm from '../components/NewTaskForm'
+import StatusChip from '../components/StatusChip'
 
 
 export default function TaskDetail() {
@@ -271,187 +272,227 @@ export default function TaskDetail() {
     }
   }
 
-  if (loading) return <p>Loading task...</p>
-  if (error && !task) return <p>Error: {error}</p>
+  if (loading) return <p className="note">Loading task...</p>
+  if (error && !task) return <p className="form-error">Error: {error}</p>
   if (!task) return null
 
   return (
     <div>
-      <Link to="/tasks">Back to all tasks</Link>
+      <Link className="page-back" to="/tasks">Back to all tasks</Link>
 
-      <h2>{task.task_title}</h2>
-      {task.task_info && <p>{task.task_info}</p>}
-      <p>Status: {task.status}{task.is_blocked && ' — Blocked'}</p>
-      <p>Created: {task.created_at}</p>
-      {task.done_date && <p>Done: {task.done_date}</p>}
-      {task.cancel_reason && <p>Cancel reason: {task.cancel_reason}</p>}
+      <div className="panel">
+        <h1>{task.task_title}</h1>
 
-      {task.parent_task_id && (
-        <p>
-          Parent: <Link to={`/tasks/${task.parent_task_id}`}>#{task.parent_task_id}</Link>
+        <div className="chip-row">
+          <StatusChip status={task.status} blocked={task.is_blocked} />
+        </div>
+
+        {task.task_info && <p className="task-card-info">{task.task_info}</p>}
+
+        <p className="note-small">
+          Created {task.created_at}
+          {task.done_date && ` · Done ${task.done_date}`}
         </p>
-      )}
 
-      <div>
-        {/* The backend refuses Done on a blocked task with a 400 anyway; the
-            button is disabled so the reason is visible before the click. */}
-        <button
-          onClick={handleMarkDone}
-          disabled={saving || task.status === 'Done' || task.is_blocked}
-        >
-          {saving ? 'Saving...' : 'Mark as Done'}
-        </button>
-        {task.is_blocked && (
-          <p>Blocked by a dependency that is still To Do — see “Depends on” below.</p>
+        {task.cancel_reason && (
+          <p className="note-small">Cancel reason: {task.cancel_reason}</p>
         )}
-        {' '}
-        <Link to={`/tasks/${task.task_id}/edit`}>Edit</Link>
-        {' '}
-        <button onClick={handleDeleteTask}>
-          {leavesShareOnDelete ? 'Leave shared task' : 'Delete'}
-        </button>
+
+        {task.parent_task_id && (
+          <p className="note-small">
+            Parent: <Link to={`/tasks/${task.parent_task_id}`}>#{task.parent_task_id}</Link>
+          </p>
+        )}
+
+        <div className="form-actions">
+          {/* The backend refuses Done on a blocked task with a 400 anyway; the
+              button is disabled so the reason is visible before the click. */}
+          <button
+            className="btn-primary"
+            onClick={handleMarkDone}
+            disabled={saving || task.status === 'Done' || task.is_blocked}
+          >
+            {saving ? 'Saving...' : 'Mark as Done'}
+          </button>
+          <Link className="btn" to={`/tasks/${task.task_id}/edit`}>Edit</Link>
+          <button className="btn-danger" onClick={handleDeleteTask}>
+            {leavesShareOnDelete ? 'Leave shared task' : 'Delete'}
+          </button>
+        </div>
+
+        {task.is_blocked && (
+          <p className="note-small">
+            Blocked by a dependency that is still To Do — see “Depends on” below.
+          </p>
+        )}
+
+        {error && <p className="form-error">Error: {error}</p>}
       </div>
 
-      {error && <p>Error: {error}</p>}
+      <div className="panel">
+        <h2 className="panel-title">Labels</h2>
 
-      <hr />
+        {task.labels.length === 0 && <p className="note">No labels on this task</p>}
 
-      <h3>Labels</h3>
-
-      {task.labels.length === 0 && <p>No labels on this task</p>}
-
-      {task.labels.map((label) => (
-        <span key={label.label_id}>
-          <span style={{ color: label.label_color }}>■</span>
-          {' '}
-          {label.label_name}
-          {' '}
-          <button onClick={() => handleDetachLabel(label.label_id)}>x</button>
-          {'  '}
-        </span>
-      ))}
-
-      {labels.length === 0 && (
-        <p>
-          You have no labels yet — create some on the <Link to="/labels">Labels page</Link>.
-        </p>
-      )}
-
-      {labels.length > 0 && availableLabels.length === 0 && (
-        <p>All of your labels are already on this task.</p>
-      )}
-
-      {availableLabels.length > 0 && (
-        <form onSubmit={handleAttachLabel}>
-          <select value={selectedLabel} onChange={(e) => setSelectedLabel(e.target.value)}>
-            <option value="">Choose a label...</option>
-            {availableLabels.map((label) => (
-              <option key={label.label_id} value={label.label_id}>
+        {task.labels.length > 0 && (
+          <div className="chip-row">
+            {task.labels.map((label) => (
+              <span className="chip" key={label.label_id}>
+                <span style={{ color: label.label_color }}>■</span>
                 {label.label_name}
-              </option>
+                <button
+                  className="chip-remove"
+                  aria-label={`Remove ${label.label_name}`}
+                  onClick={() => handleDetachLabel(label.label_id)}
+                >
+                  ×
+                </button>
+              </span>
             ))}
-          </select>
-          {' '}
-          <button type="submit" disabled={labeling || !selectedLabel}>
-            {labeling ? 'Adding...' : 'Add label'}
-          </button>
-        </form>
-      )}
+          </div>
+        )}
 
-      {labelError && <p>Error: {labelError}</p>}
+        {labels.length === 0 && (
+          <p className="note-small">
+            You have no labels yet — create some on the <Link to="/labels">Labels page</Link>.
+          </p>
+        )}
 
-      <hr />
+        {labels.length > 0 && availableLabels.length === 0 && (
+          <p className="note-small">All of your labels are already on this task.</p>
+        )}
 
-      <h3>Depends on</h3>
+        {availableLabels.length > 0 && (
+          <form className="inline-form" onSubmit={handleAttachLabel}>
+            <select value={selectedLabel} onChange={(e) => setSelectedLabel(e.target.value)}>
+              <option value="">Choose a label...</option>
+              {availableLabels.map((label) => (
+                <option key={label.label_id} value={label.label_id}>
+                  {label.label_name}
+                </option>
+              ))}
+            </select>
+            <button type="submit" className="btn" disabled={labeling || !selectedLabel}>
+              {labeling ? 'Adding...' : 'Add label'}
+            </button>
 
-      {blockers.length === 0 && <p>This task does not depend on anything</p>}
+            {labelError && <p className="form-error">Error: {labelError}</p>}
+          </form>
+        )}
+      </div>
 
-      {blockers.map((blocker) => (
-        <div key={blocker.task_id}>
-          <Link to={`/tasks/${blocker.task_id}`}>{blocker.task_title}</Link>
-          {' — '}
-          {blocker.status}
-          {' '}
-          <button onClick={() => handleRemoveBlocker(blocker.task_id)}>Remove</button>
-        </div>
-      ))}
+      <div className="panel">
+        <h2 className="panel-title">Depends on</h2>
 
-      {availableBlockers.length === 0 && <p>No other task is available to depend on.</p>}
+        {blockers.length === 0 && <p className="note">This task does not depend on anything</p>}
 
-      {availableBlockers.length > 0 && (
-        <form onSubmit={handleAddBlocker}>
-          <select
-            value={selectedBlocker}
-            onChange={(e) => setSelectedBlocker(e.target.value)}
-          >
-            <option value="">Choose a task...</option>
-            {availableBlockers.map((candidate) => (
-              <option key={candidate.task_id} value={candidate.task_id}>
-                {candidate.task_title}
-              </option>
+        {blockers.length > 0 && (
+          <div className="item-list">
+            {blockers.map((blocker) => (
+              <div className="item-card" key={blocker.task_id}>
+                <div className="item-main">
+                  <Link to={`/tasks/${blocker.task_id}`}>{blocker.task_title}</Link>
+                  <StatusChip status={blocker.status} />
+                </div>
+                <div className="item-actions">
+                  <button className="btn-danger" onClick={() => handleRemoveBlocker(blocker.task_id)}>
+                    Remove
+                  </button>
+                </div>
+              </div>
             ))}
-          </select>
-          {' '}
-          <button type="submit" disabled={blocking || !selectedBlocker}>
-            {blocking ? 'Adding...' : 'Add dependency'}
-          </button>
-        </form>
-      )}
+          </div>
+        )}
 
-      {blockerError && <p>Error: {blockerError}</p>}
+        {availableBlockers.length === 0 && (
+          <p className="note-small">No other task is available to depend on.</p>
+        )}
 
-      <hr />
+        {availableBlockers.length > 0 && (
+          <form className="inline-form" onSubmit={handleAddBlocker}>
+            <select
+              value={selectedBlocker}
+              onChange={(e) => setSelectedBlocker(e.target.value)}
+            >
+              <option value="">Choose a task...</option>
+              {availableBlockers.map((candidate) => (
+                <option key={candidate.task_id} value={candidate.task_id}>
+                  {candidate.task_title}
+                </option>
+              ))}
+            </select>
+            <button type="submit" className="btn" disabled={blocking || !selectedBlocker}>
+              {blocking ? 'Adding...' : 'Add dependency'}
+            </button>
 
-      <h3>Subtasks</h3>
+            {blockerError && <p className="form-error">Error: {blockerError}</p>}
+          </form>
+        )}
+      </div>
 
-      <NewTaskForm parentTaskId={task.task_id} onCreate={handleAddSubtask} />
+      <div className="panel">
+        <h2 className="panel-title">Subtasks</h2>
 
-      {subtasks.length === 0 && <p>No subtasks yet</p>}
+        <NewTaskForm parentTaskId={task.task_id} onCreate={handleAddSubtask} />
 
-      {subtasks.map((subtask) => (
-        <div key={subtask.task_id}>
-          <Link to={`/tasks/${subtask.task_id}`}>{subtask.task_title}</Link>
-          {' — '}
-          {subtask.status}{subtask.is_blocked && ' — Blocked'}
-          {' '}
-          <Link to={`/tasks/${subtask.task_id}/edit`}>Edit</Link>
-          {' '}
-          <button onClick={() => handleDeleteSubtask(subtask.task_id)}>Delete</button>
-        </div>
-      ))}
+        {subtasks.length === 0 && <p className="note">No subtasks yet</p>}
+
+        {subtasks.length > 0 && (
+          <div className="item-list">
+            {subtasks.map((subtask) => (
+              <div className="item-card" key={subtask.task_id}>
+                <div className="item-main">
+                  <Link to={`/tasks/${subtask.task_id}`}>{subtask.task_title}</Link>
+                  <StatusChip status={subtask.status} blocked={subtask.is_blocked} />
+                </div>
+                <div className="item-actions">
+                  <Link className="btn" to={`/tasks/${subtask.task_id}/edit`}>Edit</Link>
+                  <button className="btn-danger" onClick={() => handleDeleteSubtask(subtask.task_id)}>
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {task.owner_id === user.user_id && task.parent_task_id === null && (
-        <div>
-          <hr />
+        <div className="panel">
+          <h2 className="panel-title">Shared with</h2>
 
-          <h3>Shared with</h3>
+          {shares.length === 0 && <p className="note">Not shared with anyone yet</p>}
 
-          {shares.length === 0 && <p>Not shared with anyone yet</p>}
-
-          {shares.map((share) => (
-            <div key={share.user_id}>
-              {share.username}
-              {' '}
-              <button onClick={() => handleUnshare(share.user_id, share.username)}>
-                Remove
-              </button>
+          {shares.length > 0 && (
+            <div className="item-list">
+              {shares.map((share) => (
+                <div className="item-card" key={share.user_id}>
+                  <span className="item-name">{share.username}</span>
+                  <div className="item-actions">
+                    <button
+                      className="btn-danger"
+                      onClick={() => handleUnshare(share.user_id, share.username)}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-
-          <h4>Share with a friend</h4>
+          )}
 
           {friends.length === 0 && (
-            <p>
+            <p className="note-small">
               You have no friends yet — add some on the <Link to="/friends">Friends page</Link>.
             </p>
           )}
 
           {friends.length > 0 && availableFriends.length === 0 && (
-            <p>All of your friends already have this task.</p>
+            <p className="note-small">All of your friends already have this task.</p>
           )}
 
           {availableFriends.length > 0 && (
-            <form onSubmit={handleShare}>
+            <form className="inline-form" onSubmit={handleShare}>
               <select value={selectedFriend} onChange={(e) => setSelectedFriend(e.target.value)}>
                 <option value="">Choose a friend...</option>
                 {availableFriends.map((friend) => (
@@ -460,14 +501,13 @@ export default function TaskDetail() {
                   </option>
                 ))}
               </select>
-              {' '}
-              <button type="submit" disabled={sharing || !selectedFriend}>
+              <button type="submit" className="btn" disabled={sharing || !selectedFriend}>
                 {sharing ? 'Sharing...' : 'Share'}
               </button>
+
+              {shareError && <p className="form-error">Error: {shareError}</p>}
             </form>
           )}
-
-          {shareError && <p>Error: {shareError}</p>}
         </div>
       )}
     </div>

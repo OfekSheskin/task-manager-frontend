@@ -118,7 +118,9 @@ export default function Tasks() {
     <div>
       <h1>Tasks</h1>
 
-      <NewTaskForm onCreate={handleCreate} />
+      <div className="panel">
+        <NewTaskForm onCreate={handleCreate} />
+      </div>
 
       <TaskFilters
         filters={filters}
@@ -128,27 +130,29 @@ export default function Tasks() {
         hasActiveFilters={hasActiveFilters}
       />
 
-      {loading && <p>Loading tasks...</p>}
-      {error && <p>Error: {error}</p>}
+      {loading && <p className="note">Loading tasks...</p>}
+      {error && <p className="form-error">Error: {error}</p>}
       {!loading && visibleTasks.length === 0 && (
-        <p>
+        <p className="note">
           {hasActiveFilters
             ? 'No tasks match the current filters'
             : 'You have no tasks to show'}
         </p>
       )}
 
-      {!loading && !error &&
-        visibleTasks.map((task) => (
-          <TaskItem
-            key={task.task_id}
-            task={task}
-            leavesShare={leavesShareOnDelete(task)}
-            parentTitle={titlesById.get(task.parent_task_id) ?? null}
-            onDelete={handleDelete}
-          />
-        ))
-      }
+      {!loading && !error && (
+        <div className="task-list">
+          {visibleTasks.map((task) => (
+            <TaskItem
+              key={task.task_id}
+              task={task}
+              leavesShare={leavesShareOnDelete(task)}
+              parentTitle={titlesById.get(task.parent_task_id) ?? null}
+              onDelete={handleDelete}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

@@ -37,29 +37,30 @@ export default function Login() {
   if (token) return <Navigate to="/tasks" replace />
 
   return (
-    <div>
-      <h1>Login</h1>
+    <div className="auth-page">
+      <div className="auth-panel">
+        <h1>Login</h1>
 
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Username</label>
-          <input type="text" id="username" name="username" value = {username}
-            onChange={(e) => setUsername(e.target.value)} />
-        </div>
-        <div>
-          <label>Password</label>
-          <input type="password" id="password" name="password" value = {password}
-            onChange={(e) => setPassword(e.target.value)} />
-        </div>
-        <button type="submit">Login</button>
+        <form onSubmit={handleSubmit}>
+          <div className="form-row">
+            <label htmlFor="username">Username</label>
+            <input type="text" id="username" name="username" value={username}
+              onChange={(e) => setUsername(e.target.value)} />
+          </div>
+          <div className="form-row">
+            <label htmlFor="password">Password</label>
+            <input type="password" id="password" name="password" value={password}
+              onChange={(e) => setPassword(e.target.value)} />
+          </div>
+          <button type="submit" className="btn-primary">Login</button>
 
-        {error && <p>Error: {error}</p>}
-      </form>
-      <p>
+          {error && <p className="form-error">Error: {error}</p>}
+        </form>
+      </div>
+
+      <p className="auth-switch">
         Don't have an account? <Link to="/register">Register</Link>
       </p>
- 
-
     </div>
   )
 }

@@ -82,21 +82,29 @@ export default function Labels() {
 
       <LabelForm onCreate={handleCreate} />
 
-      {loading && <p>Loading labels...</p>}
-      {error && <p>Error: {error}</p>}
-      {actionError && <p>Error: {actionError}</p>}
-      {!loading && !error && labels.length === 0 && <p>You have no labels yet</p>}
+      {loading && <p className="note">Loading labels...</p>}
+      {error && <p className="form-error">Error: {error}</p>}
+      {actionError && <p className="form-error">Error: {actionError}</p>}
+      {!loading && !error && (
+        <div className="panel">
+          <h2 className="panel-title">Your labels</h2>
 
-      {!loading && !error &&
-        labels.map((label) => (
-          <LabelItem
-            key={label.label_id}
-            label={label}
-            onUpdate={handleUpdate}
-            onDelete={handleDelete}
-          />
-        ))
-      }
+          {labels.length === 0 && <p className="note">You have no labels yet</p>}
+
+          {labels.length > 0 && (
+            <div className="item-list">
+              {labels.map((label) => (
+                <LabelItem
+                  key={label.label_id}
+                  label={label}
+                  onUpdate={handleUpdate}
+                  onDelete={handleDelete}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

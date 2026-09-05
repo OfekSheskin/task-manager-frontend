@@ -1,12 +1,14 @@
 
 export default function PendingItem({ pending, onApprove, onDeny }) {
       return (
-        <div>
-          <h3>
+        <div className="item-card">
+          <span className="item-name">
             {pending.requester_username}
-          </h3>
-          <button onClick={() => onApprove(pending)}>Approve</button>
-          <button onClick={() => onDeny(pending)}>Deny</button>
+          </span>
+          <div className="item-actions">
+            <button className="btn-primary" onClick={() => onApprove(pending)}>Approve</button>
+            <button className="btn" onClick={() => onDeny(pending)}>Deny</button>
+          </div>
         </div>
       )
 

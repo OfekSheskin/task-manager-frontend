@@ -95,32 +95,48 @@ export default function Friends() {
 
       <AddFriendForm onSend={handleSendRequest} />
 
-      {loading && <p>Loading friends...</p>}
-      {error && <p>Error: {error}</p>}
-      {actionError && <p>Error: {actionError}</p>}
+      {loading && <p className="note">Loading friends...</p>}
+      {error && <p className="form-error">Error: {error}</p>}
+      {actionError && <p className="form-error">Error: {actionError}</p>}
 
       {!loading && !error && (
         <>
-          <h2>Pending requests</h2>
-          {pending.length === 0 && <p>You have no pending requests</p>}
-          {pending.map((request) => (
-            <PendingItem
-              key={request.requester_id}
-              pending={request}
-              onApprove={(row) => handleAnswer(row, APPROVED)}
-              onDeny={(row) => handleAnswer(row, DENIED)}
-            />
-          ))}
+          <div className="panel">
+            <h2 className="panel-title">Pending requests</h2>
 
-          <h2>Your friends</h2>
-          {friends.length === 0 && <p>You have no friends to show</p>}
-          {friends.map((friend) => (
-            <FriendItem
-              key={friend.user_id}
-              friend={friend}
-              onRemove={handleRemoveFriend}
-            />
-          ))}
+            {pending.length === 0 && <p className="note">You have no pending requests</p>}
+
+            {pending.length > 0 && (
+              <div className="item-list">
+                {pending.map((request) => (
+                  <PendingItem
+                    key={request.requester_id}
+                    pending={request}
+                    onApprove={(row) => handleAnswer(row, APPROVED)}
+                    onDeny={(row) => handleAnswer(row, DENIED)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="panel">
+            <h2 className="panel-title">Your friends</h2>
+
+            {friends.length === 0 && <p className="note">You have no friends to show</p>}
+
+            {friends.length > 0 && (
+              <div className="item-list">
+                {friends.map((friend) => (
+                  <FriendItem
+                    key={friend.user_id}
+                    friend={friend}
+                    onRemove={handleRemoveFriend}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </>
       )}
     </div>

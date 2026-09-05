@@ -35,18 +35,19 @@ export default function AddFriendForm({ onSend }) {
   }
 
   return (
-    <form onSubmit={handleSendRequest}>
+    <form className="panel inline-form" onSubmit={handleSendRequest}>
       <input
+        type="text"
         value={username}
         onChange={handleChange}
         placeholder="Add a friend by username..."
       />
-          <button type="submit" disabled={saving || !username.trim()}>
-            {saving ? 'Sending...' : 'Send request'}
-          </button>
+      <button type="submit" className="btn-primary" disabled={saving || !username.trim()}>
+        {saving ? 'Sending...' : 'Send request'}
+      </button>
 
-      {sent && <p>Request sent to {sent}</p>}
-      {error && <p>Error: {error}</p>}
+      {sent && <p className="note-small">Request sent to {sent}</p>}
+      {error && <p className="form-error">Error: {error}</p>}
     </form>
   )
 }

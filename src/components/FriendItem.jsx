@@ -1,13 +1,14 @@
 
 
-
 export default function FriendItem({ friend, onRemove }) {
       return (
-        <div>
-          <h3>
+        <div className="item-card">
+          <span className="item-name">
             {friend.username}
-          </h3>
-          <button onClick={() => onRemove(friend)}>Remove</button>
+          </span>
+          <div className="item-actions">
+            <button className="btn-danger" onClick={() => onRemove(friend)}>Remove</button>
+          </div>
         </div>
       )
 
